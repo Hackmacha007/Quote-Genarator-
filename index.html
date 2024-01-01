@@ -13,11 +13,18 @@
             padding: 0;
             height: 100vh;
             display: flex;
+            flex-direction: column; /* Updated to column layout */
             align-items: center;
             justify-content: center;
+            transition: background 0.5s;
             background-size: cover;
             background-position: center;
-            transition: background 0.5s;
+        }
+
+        #header {
+            margin-bottom: 20px;
+            font-size: 32px;
+            color: #ffffff;
         }
 
         #quote-container {
@@ -25,32 +32,93 @@
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px); /* Add blur effect */
+            background-color: rgba(255, 255, 255, 0.3); /* Adjust the transparency */
+            background-size: cover;
+            background-position: center;
         }
 
         #quote-text {
             margin-bottom: 10px;
+            font-size: 24px; /* Adjust the font size as needed */
         }
 
         #quote-author {
             font-style: italic;
+            font-size: 18px; /* Adjust the font size as needed */
         }
 
-        #quote-button {
+        .btn-container {
+            display: flex;
+            justify-content: space-between; /* Add space between buttons */
+        }
+
+        .btn-content,
+        .btn-download {
+            /* Common button styles */
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 20px; /* Adjust the font size as needed */
+            border-radius: 10px;
             margin-top: 10px;
             cursor: pointer;
+            transition: background 0.5s;
+        }
+
+        .btn-content {
+            /* Your existing styles for the main button */
+            color: #ffffff;
+            background: #ff135a;
+            box-shadow: 0 0 0.2em 0 #ff135a;
+            margin-right: 10px;
+        }
+
+        .btn-download {
+            /* New styles for the download button */
+            color: #ffffff;
+            background: #007bff; /* Change color as needed */
+            box-shadow: 0 0 0.2em 0 #007bff;
+        }
+
+        .btn-content:hover,
+        .btn-download:hover,
+        .btn-content:focus,
+        .btn-download:focus {
+            background: #ff145b; /* Change color as needed */
+        }
+
+        /* Hide buttons in downloaded image */
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 
 <body>
+    <div id="header">
+        <h1>Random Quote Generator</h1>
+    </div>
     <div id="quote-container">
-        <h2>Random Quote Generator</h2>
         <p id="quote-text">Click the button to get a random quote!</p>
         <p id="quote-author"></p>
-        <button id="quote-button" onclick="getRandomQuote()">Get Quote</button>
+        <div class="btn-container">
+            <a href="#" class="btn-content" onclick="getRandomQuote()">
+                <span class="icon-arrow" id="arrow-icon-one">➤</span>
+                <span class="icon-arrow" id="arrow-icon-two">➤</span>
+                <span class="icon-arrow" id="arrow-icon-three">➤</span>
+                Get Quote
+            </a>
+            <a href="#" class="btn-download" onclick="downloadQuote()">
+                Download Quote
+            </a>
+        </div>
     </div>
 
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
         async function getRandomQuote() {
             try {
@@ -59,14 +127,58 @@
 
                 document.getElementById("quote-text").innerText = data.content;
                 document.getElementById("quote-author").innerText = data.author;
-
-                // Change background image with a random image from Lorem Picsum
-                const randomImageNumber = Math.floor(Math.random() * 1000) + 1;
-                const imageUrl = `https://picsum.photos/1920/1080?random=${randomImageNumber}`;
-                document.body.style.backgroundImage = `url('${imageUrl}')`;
+                
+                // Reset background to default gradient
+                document.body.style.backgroundImage = 'none';
             } catch (error) {
                 console.error("Error fetching quote:", error);
             }
+        }
+
+        function getRandomGradient() {
+            // Generate a random gradient color
+            const randomColor1 = getRandomColor();
+            const randomColor2 = getRandomColor();
+
+            return `linear-gradient(to bottom, ${randomColor1}, ${randomColor2})`;
+        }
+
+        function getRandomColor() {
+            // Generate a random color in hexadecimal format
+            return '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+
+        function getRandomImage() {
+            // Change background image with a random image from Lorem Picsum
+            const randomImageNumber = Math.floor(Math.random() * 1000) + 1;
+            const imageUrl = `https://picsum.photos/1920/1080?random=${randomImageNumber}`;
+            document.body.style.backgroundImage = `url('${imageUrl}')`;
+        }
+
+        function downloadQuote() {
+            // Hide buttons before capturing the image
+            document.querySelector('.btn-container').classList.add('hidden');
+
+            // Apply a random gradient background to the quote container
+            document.getElementById("quote-container").style.background = getRandomGradient();
+
+            html2canvas(document.body).then(function (canvas) {
+                var link = document.createElement("a");
+                document.body.appendChild(link);
+                link.download = "quote_image.jpg";
+                link.href = canvas.toDataURL("image/jpeg");
+                link.target = '_blank';
+                link.click();
+
+                // Apply a random image to the body after capturing the image
+                getRandomImage();
+
+                // Show buttons again after capturing the image
+                document.querySelector('.btn-container').classList.remove('hidden');
+
+                // Reset to the default gradient background
+                document.getElementById("quote-container").style.background = 'linear-gradient(to bottom, #4c4c4c, #595959)';
+            });
         }
 
         // Initial quote and background image on page load
